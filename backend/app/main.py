@@ -11,6 +11,7 @@ from docx import Document as DocxDocument
 
 from app.core.database import Base, engine, SessionLocal, get_db
 from app.core.models import Document
+from app.api.health import router as health_router
 
 # Pydantic models for API
 class DocumentResponse(BaseModel):
@@ -30,6 +31,9 @@ class DocumentList(BaseModel):
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="Knowledge Window Backend")
+
+# Include health check router
+app.include_router(health_router, tags=["health"])
 
 # Initialize services
 from .services.vector_search import VectorSearchService

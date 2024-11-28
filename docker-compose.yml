@@ -1,16 +1,17 @@
-version: '3.8'
-
 services:
   frontend:
     build:
       context: .
       dockerfile: docker/frontend/Dockerfile
     ports:
-      - "3000:3000"
+      - "3000:5173"
     environment:
       - VITE_API_URL=http://backend:8000
+    networks:
+      - app-network
     depends_on:
-      - backend
+      backend:
+        condition: service_healthy
 
   backend:
     build:
@@ -20,8 +21,18 @@ services:
       - "8000:8000"
     environment:
       - DATABASE_URL=postgresql://postgres:postgres@db:5432/knowledge_window
+      - CORS_ORIGINS=http://localhost:3000
+    networks:
+      - app-network
     depends_on:
-      - db
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8000/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
 
   db:
     image: postgres:15
@@ -33,6 +44,18 @@ services:
       - POSTGRES_DB=knowledge_window
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+networks:
+  app-network:
+    driver: bridge
 
 volumes:
   postgres_data:

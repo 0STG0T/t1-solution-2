@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Text, DateTime, ForeignKey, Binary
+from sqlalchemy import Column, Integer, String, Text, DateTime, ForeignKey, LargeBinary
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 from datetime import datetime
@@ -11,7 +11,7 @@ class Document(Base):
     id = Column(Integer, primary_key=True, index=True)
     title = Column(String, index=True)
     content = Column(Text)
-    raw_content = Column(Binary, nullable=True)
+    raw_content = Column(LargeBinary, nullable=True)
     file_type = Column(String)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
@@ -21,7 +21,7 @@ class SearchIndex(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     document_id = Column(Integer, ForeignKey("documents.id"))
-    content_vector = Column(Binary)  # Store document vectors for efficient search
+    content_vector = Column(LargeBinary)  # Store document vectors for efficient search
     created_at = Column(DateTime, default=datetime.utcnow)
 
     document = relationship("Document", backref="search_indices")
